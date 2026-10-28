@@ -23,4 +23,10 @@ public class UserService : IUserService
         var user = await _userManager.FindByIdAsync(userId);
         return user?.FullName ?? user?.UserName;
     }
+
+    public async Task<string?> GetUserEmailAsync(string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        return user?.Email;
+    }
 }

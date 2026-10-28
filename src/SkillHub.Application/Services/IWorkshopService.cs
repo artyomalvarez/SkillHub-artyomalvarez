@@ -1,4 +1,4 @@
-using SkillHub.Application.DTOs.Workshops;
+using SkillHub.Application.Dtos.Workshops;
 
 namespace SkillHub.Application.Services;
 

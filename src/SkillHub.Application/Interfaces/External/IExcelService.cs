@@ -1,4 +1,4 @@
-using SkillHub.Application.DTOs.Excel;
+using SkillHub.Application.Dtos.Excel;
 
 namespace SkillHub.Application.Interfaces.External;
 

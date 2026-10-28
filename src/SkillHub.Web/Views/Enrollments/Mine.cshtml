@@ -1,0 +1,93 @@
+@model IEnumerable<SkillHub.Application.Dtos.Enrollments.EnrollmentDto>
+@{
+    ViewData["Title"] = "Mis Inscripciones";
+}
+
+<div class="mt-4 mb-4">
+    <h1 class="fw-bold fs-2">Mis Inscripciones 📋</h1>
+    <p class="text-muted fs-5">Gestiona tus talleres inscritos y descarga tus constancias.</p>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @ViewBag.Error
+    </div>
+}
+
+<div class="row g-4">
+    @if (!Model.Any())
+    {
+        <div class="col-12 text-center py-5">
+            <h4 class="text-muted">Aún no tienes inscripciones.</h4>
+            <a asp-controller="Workshops" asp-action="Index" class="btn bg-primary-custom mt-3">Ver catálogo de talleres</a>
+        </div>
+    }
+    else
+    {
+        @foreach (var enrollment in Model)
+        {
+            <div class="col-md-6">
+                <div class="card card-custom p-4 border-start border-5 @(enrollment.Status == "Active" ? "border-success" : "border-danger")">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h4 class="fw-bold mb-1">@enrollment.WorkshopTitle</h4>
+                            <span class="text-muted fw-semibold">Código: @enrollment.WorkshopCode</span>
+                        </div>
+                        @if (enrollment.Status == "Active")
+                        {
+                            <span class="badge bg-success">Activa</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Cancelada</span>
+                        }
+                    </div>
+
+                    <div class="mb-4 text-muted small">
+                        <div class="mb-1">
+                            <span class="material-symbols-outlined align-middle" style="font-size: 16px;">calendar_month</span> 
+                            @enrollment.StartDateTime.ToString("dd MMM yyyy")
+                        </div>
+                        <div>
+                            <span class="material-symbols-outlined align-middle" style="font-size: 16px;">schedule</span> 
+                            @enrollment.StartDateTime.ToString("hh:mm tt") - @enrollment.EndDateTime.ToString("hh:mm tt")
+                        </div>
+                    </div>
+
+                    @if (enrollment.Status == "Active")
+                    {
+                        <div class="d-flex gap-2">
+                            <form asp-action="Cancel" method="post" class="w-50">
+                                <input type="hidden" name="id" value="@enrollment.Id" />
+                                <button type="submit" class="btn btn-outline-danger w-100 fw-semibold">
+                                    Cancelar
+                                </button>
+                            </form>
+                            
+                            <a href="@Url.Action("Certificate", "Enrollments", new { id = enrollment.Id })" class="btn bg-secondary-custom w-50 fw-semibold d-flex align-items-center justify-content-center">
+                                <span class="material-symbols-outlined align-middle me-1" style="font-size: 18px;">download</span> PDF
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>

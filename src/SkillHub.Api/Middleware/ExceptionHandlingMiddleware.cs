@@ -32,6 +32,21 @@ public class ExceptionHandlingMiddleware
             _logger.LogWarning(ex, "Application Exception interceptada: {Message}", ex.Message);
             await HandleCustomExceptionAsync(context, HttpStatusCode.BadRequest, ex.Message);
         }
+        catch (System.ApplicationException ex)
+        {
+            _logger.LogWarning(ex, "System Application Exception interceptada: {Message}", ex.Message);
+            await HandleCustomExceptionAsync(context, HttpStatusCode.BadRequest, ex.Message);
+        }
+        catch (BadHttpRequestException ex)
+        {
+            _logger.LogWarning(ex, "BadHttpRequestException interceptada: {Message}", ex.Message);
+            await HandleCustomExceptionAsync(context, HttpStatusCode.BadRequest, "La inscripción no existe o el ID es inválido.");
+        }
+        catch (FormatException ex)
+        {
+            _logger.LogWarning(ex, "FormatException interceptada: {Message}", ex.Message);
+            await HandleCustomExceptionAsync(context, HttpStatusCode.BadRequest, "La inscripción no existe o el ID es inválido.");
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Excepción no controlada interceptada: {Message}", ex.Message);

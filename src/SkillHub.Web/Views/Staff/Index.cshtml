@@ -1,0 +1,125 @@
+@model IEnumerable<SkillHub.Application.Dtos.Workshops.WorkshopDto>
+@{
+    ViewData["Title"] = "Panel de Instructor";
+}
+
+<div class="d-flex justify-content-between align-items-center mt-4 mb-4">
+    <div>
+        <h1 class="fw-bold fs-2">Panel de Instructor 👨‍🏫</h1>
+        <p class="text-muted fs-5 mb-0">Gestiona los talleres formativos y supervisa la lista de participantes inscritos.</p>
+    </div>
+    <div>
+        <a asp-action="Create" class="btn bg-primary-custom fw-semibold px-4 py-2 shadow-sm d-flex align-items-center gap-2">
+            <span class="material-symbols-outlined" style="font-size: 20px;">add_circle</span>
+            Crear Nuevo Taller
+        </a>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <span class="material-symbols-outlined align-middle me-1">check_circle</span>
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span class="material-symbols-outlined align-middle me-1">error</span>
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @ViewBag.Error
+    </div>
+}
+
+<div class="card card-custom p-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col" class="fw-bold">Código</th>
+                    <th scope="col" class="fw-bold">Título</th>
+                    <th scope="col" class="fw-bold">Instructor</th>
+                    <th scope="col" class="fw-bold">Horario (UTC)</th>
+                    <th scope="col" class="fw-bold text-center">Capacidad</th>
+                    <th scope="col" class="fw-bold text-center">Cupos Libres</th>
+                    <th scope="col" class="fw-bold text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <span class="material-symbols-outlined d-block fs-1 mb-2">event_busy</span>
+                            No hay talleres registrados en la plataforma.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var workshop in Model)
+                    {
+                        <tr>
+                            <td>
+                                <span class="badge bg-light text-dark border fw-bold">@workshop.Code</span>
+                            </td>
+                            <td>
+                                <div class="fw-bold text-dark">@workshop.Title</div>
+                                <div class="text-muted small text-truncate" style="max-width: 280px;">@workshop.Description</div>
+                            </td>
+                            <td>
+                                <div class="small fw-semibold text-secondary-custom">
+                                    <span class="material-symbols-outlined align-middle" style="font-size: 16px;">person</span>
+                                    @workshop.InstructorName
+                                </div>
+                            </td>
+                            <td>
+                                <div class="small">
+                                    <span class="material-symbols-outlined align-middle text-muted" style="font-size: 16px;">calendar_month</span>
+                                    @workshop.StartDateTime.ToString("dd MMM yyyy")
+                                </div>
+                                <div class="small text-muted">
+                                    <span class="material-symbols-outlined align-middle" style="font-size: 16px;">schedule</span>
+                                    @workshop.StartDateTime.ToString("HH:mm") - @workshop.EndDateTime.ToString("HH:mm")
+                                </div>
+                            </td>
+                            <td class="text-center fw-semibold">
+                                @workshop.Capacity
+                            </td>
+                            <td class="text-center">
+                                @if (workshop.AvailableSlots > 0)
+                                {
+                                    <span class="badge bg-success-subtle text-success border border-success px-3 py-1">
+                                        @workshop.AvailableSlots disponibles
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger-subtle text-danger border border-danger px-3 py-1">
+                                        Agotado
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Enrollments" asp-route-id="@workshop.Id" class="btn bg-secondary-custom btn-sm fw-semibold px-3 py-2">
+                                    <span class="material-symbols-outlined align-middle" style="font-size: 16px;">group</span>
+                                    Ver Inscritos
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SkillHub.Application.DTOs.Reports;
+using SkillHub.Application.Dtos.Reports;
 using SkillHub.Application.Services;
 
 namespace SkillHub.Api.Controllers;

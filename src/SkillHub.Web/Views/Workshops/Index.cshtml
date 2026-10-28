@@ -1,0 +1,98 @@
+@model IEnumerable<SkillHub.Application.Dtos.Workshops.WorkshopDto>
+@{
+    ViewData["Title"] = "Catálogo";
+}
+
+<div class="mt-4 mb-5">
+    <h1 class="fw-bold fs-2">Aprende algo nuevo hoy 🚀</h1>
+    <p class="text-muted fs-5">Talleres presenciales intensivos y prácticos con mentores apasionados.</p>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @ViewBag.Error
+    </div>
+}
+
+<div class="row g-4">
+    @if (!Model.Any())
+    {
+        <div class="col-12 text-center py-5">
+            <h4 class="text-muted">No hay talleres disponibles por el momento.</h4>
+        </div>
+    }
+    else
+    {
+        @foreach (var workshop in Model)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="card card-custom h-100 overflow-hidden">
+                    <!-- Imagen placeholder genérica basada en el título -->
+                    <div class="bg-secondary-custom d-flex align-items-center justify-content-center" style="height: 160px;">
+                        <span class="material-symbols-outlined text-white" style="font-size: 60px;">auto_stories</span>
+                    </div>
+                    
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge bg-light text-dark border">@workshop.Code</span>
+                            <span class="badge @(workshop.AvailableSlots > 0 ? "bg-success" : "bg-danger")">
+                                @workshop.AvailableSlots cupos disp.
+                            </span>
+                        </div>
+                        
+                        <h4 class="card-title fw-bold fs-5 mb-1">@workshop.Title</h4>
+                        <p class="text-muted small mb-3">
+                            <span class="material-symbols-outlined align-middle" style="font-size: 16px;">person</span> @workshop.InstructorName
+                        </p>
+
+                        <div class="bg-light rounded p-3 mb-3 small">
+                            <div class="mb-1">
+                                <span class="material-symbols-outlined align-middle text-secondary-custom" style="font-size: 16px;">calendar_today</span>
+                                @workshop.StartDateTime.ToString("dd MMM yyyy, hh:mm tt")
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined align-middle text-secondary-custom" style="font-size: 16px;">schedule</span>
+                                Hasta @workshop.EndDateTime.ToString("hh:mm tt")
+                            </div>
+                        </div>
+
+                        @if (Context.Session.GetString("JwtToken") == null)
+                        {
+                            <!-- Si no hay sesión, lo mandamos a loguearse -->
+                            <a asp-controller="Account" asp-action="Login" class="btn bg-secondary-custom w-100 py-2 fw-bold rounded-3">
+                                Inicia sesión para inscribirte
+                            </a>
+                        }
+                        else
+                        {
+                            <!-- Si hay sesión, mostramos el formulario de inscripción -->
+                            <form asp-controller="Enrollments" asp-action="Enroll" method="post">
+                                <input type="hidden" name="workshopId" value="@workshop.Id" />
+                                <button type="submit" class="btn bg-primary-custom w-100 py-2 fw-bold rounded-3" @(workshop.AvailableSlots == 0 ? "disabled" : "")>
+                                    Inscribirme
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>

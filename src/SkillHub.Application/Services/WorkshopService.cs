@@ -1,4 +1,5 @@
-using SkillHub.Application.DTOs.Workshops;
+using Microsoft.EntityFrameworkCore;
+using SkillHub.Application.Dtos.Workshops;
 using SkillHub.Application.Interfaces.External;
 using SkillHub.Application.Interfaces.Persistence;
 using SkillHub.Domain.Entities;
@@ -39,22 +40,27 @@ public class WorkshopService : IWorkshopService
             throw new ApplicationException($"No se encontró ningún instructor registrado con el correo '{dto.InstructorEmail}'.");
         }
 
-        // 2. Validar que el código no esté repetido
+        // 2. Validar que el código no esté repetido de antemano
         var existingWorkshop = await _workshopRepository.GetByCodeAsync(dto.Code, ct);
         if (existingWorkshop is not null)
         {
-            throw new ApplicationException($"Ya existe un taller con el código '{dto.Code}'.");
+            throw new ApplicationException("El código del taller ya existe en la plataforma.");
         }
 
-        // 3. Validaciones de negocio adicionales sobre fechas y capacidad
-        if (dto.StartDateTime >= dto.EndDateTime)
+        // 3. Forzar UTC en las fechas
+        var startDateTimeUtc = DateTime.SpecifyKind(dto.StartDateTime, DateTimeKind.Utc);
+        var endDateTimeUtc = DateTime.SpecifyKind(dto.EndDateTime, DateTimeKind.Utc);
+
+        // 4. Validar que la fecha de inicio sea en el futuro
+        if (startDateTimeUtc <= DateTime.UtcNow)
+        {
+            throw new ApplicationException("La fecha de inicio debe ser en el futuro.");
+        }
+
+        // 5. Validaciones de negocio adicionales sobre fechas y capacidad
+        if (startDateTimeUtc >= endDateTimeUtc)
         {
             throw new ApplicationException("La fecha de inicio debe ser anterior a la fecha de finalización.");
-        }
-
-        if (dto.StartDateTime <= DateTime.UtcNow)
-        {
-            throw new ApplicationException("La fecha de inicio debe ser posterior a la fecha actual.");
         }
 
         if (dto.Capacity <= 0)
@@ -69,13 +75,21 @@ public class WorkshopService : IWorkshopService
             Title = dto.Title.Trim(),
             Description = dto.Description.Trim(),
             InstructorId = instructorId,
-            StartDateTime = dto.StartDateTime,
-            EndDateTime = dto.EndDateTime,
+            StartDateTime = startDateTimeUtc,
+            EndDateTime = endDateTimeUtc,
             Capacity = dto.Capacity
         };
 
         await _workshopRepository.AddAsync(workshop, ct);
-        await _unitOfWork.SaveChangesAsync(ct);
+
+        try
+        {
+            await _unitOfWork.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException)
+        {
+            throw new ApplicationException("El código del taller ya existe en la plataforma.");
+        }
 
         var instructorName = await _userService.GetUserFullNameAsync(instructorId) ?? dto.InstructorEmail;
 

@@ -1,4 +1,4 @@
-using SkillHub.Application.DTOs.Reports;
+using SkillHub.Application.Dtos.Reports;
 
 namespace SkillHub.Application.Services;
 

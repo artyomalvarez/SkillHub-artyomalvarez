@@ -80,17 +80,26 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// 6. Seed de Datos inicial
+// 6. Seed de Datos inicial (fuera del if IsDevelopment)
 using (var scope = app.Services.CreateScope())
 {
     try
     {
-        DataSeeder.Initialize(scope.ServiceProvider);
+        DataSeeder.Initialize(scope.ServiceProvider).Wait();
     }
     catch (Exception ex)
     {
+        var inner = ex is AggregateException agg && agg.InnerException != null
+            ? agg.InnerException
+            : ex;
+
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine($"\n🚨 [SEEDER ERROR] {inner.Message}");
+        Console.WriteLine(inner.StackTrace);
+        Console.ResetColor();
+
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Error durante la ejecución del seeder de base de datos.");
+        logger.LogError(inner, "Error durante la ejecución del seeder de base de datos.");
     }
 }
 

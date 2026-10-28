@@ -1,0 +1,96 @@
+@model IEnumerable<SkillHub.Application.Dtos.Enrollments.EnrollmentDto>
+@{
+    var workshop = ViewBag.Workshop as SkillHub.Application.Dtos.Workshops.WorkshopDto;
+    ViewData["Title"] = workshop != null ? $"Inscritos en {workshop.Code}" : "Inscritos en Taller";
+}
+
+<div class="mt-4 mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <a asp-action="Index" class="btn btn-outline-secondary btn-sm mb-2 d-inline-flex align-items-center gap-1">
+                <span class="material-symbols-outlined" style="font-size: 16px;">arrow_back</span>
+                Volver a la lista de talleres
+            </a>
+            <h1 class="fw-bold fs-2 mb-1">
+                Inscritos en el Taller 📋
+            </h1>
+            @if (workshop != null)
+            {
+                <p class="text-muted fs-5 mb-0">
+                    <span class="badge bg-secondary-custom me-2">@workshop.Code</span>
+                    <strong>@workshop.Title</strong> &bull; Instructor: @workshop.InstructorName
+                </p>
+            }
+        </div>
+    </div>
+</div>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @ViewBag.Error
+    </div>
+}
+
+<div class="card card-custom p-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col" class="fw-bold">Nombre del Participante</th>
+                    <th scope="col" class="fw-bold">Correo Electrónico</th>
+                    <th scope="col" class="fw-bold">Fecha de Inscripción</th>
+                    <th scope="col" class="fw-bold text-center">Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="4" class="text-center py-5 text-muted">
+                            <span class="material-symbols-outlined d-block fs-1 mb-2">person_off</span>
+                            Aún no hay participantes inscritos en este taller.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var enrollment in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-semibold text-dark d-flex align-items-center gap-2">
+                                    <span class="material-symbols-outlined text-secondary-custom" style="font-size: 20px;">account_circle</span>
+                                    <span>@(string.IsNullOrWhiteSpace(enrollment.ParticipantName) ? "Participante" : enrollment.ParticipantName)</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="text-muted">@enrollment.ParticipantEmail</span>
+                            </td>
+                            <td>
+                                <span class="material-symbols-outlined align-middle text-muted me-1" style="font-size: 16px;">calendar_today</span>
+                                @enrollment.EnrolledAt.ToString("dd/MM/yyyy HH:mm")
+                            </td>
+                            <td class="text-center">
+                                @if (enrollment.Status == "Active")
+                                {
+                                    <span class="badge bg-success px-3 py-2">
+                                        <span class="material-symbols-outlined align-middle me-1" style="font-size: 14px;">check_circle</span>
+                                        Activa
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger px-3 py-2">
+                                        <span class="material-symbols-outlined align-middle me-1" style="font-size: 14px;">cancel</span>
+                                        Cancelada
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

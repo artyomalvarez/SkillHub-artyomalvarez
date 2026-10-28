@@ -1,4 +1,4 @@
-using SkillHub.Application.DTOs.Enrollments;
+using SkillHub.Application.Dtos.Enrollments;
 
 namespace SkillHub.Application.Services;
 

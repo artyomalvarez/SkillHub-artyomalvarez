@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SkillHub.Application.DTOs.Enrollments;
-using SkillHub.Application.DTOs.Workshops;
+using SkillHub.Application.Dtos.Enrollments;
+using SkillHub.Application.Dtos.Workshops;
 using SkillHub.Application.Services;
 
 namespace SkillHub.Api.Controllers;

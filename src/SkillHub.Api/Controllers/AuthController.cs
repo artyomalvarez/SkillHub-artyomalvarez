@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using SkillHub.Application.DTOs.Auth;
+using SkillHub.Application.Dtos.Auth;
 using SkillHub.Application.Interfaces.External;
 
 namespace SkillHub.Api.Controllers;

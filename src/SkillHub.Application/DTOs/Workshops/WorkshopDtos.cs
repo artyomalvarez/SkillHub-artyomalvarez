@@ -1,4 +1,4 @@
-namespace SkillHub.Application.DTOs.Workshops;
+namespace SkillHub.Application.Dtos.Workshops;
 
 public record WorkshopDto(
     Guid Id,

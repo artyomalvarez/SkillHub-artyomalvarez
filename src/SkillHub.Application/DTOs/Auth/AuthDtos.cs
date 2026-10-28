@@ -1,4 +1,4 @@
-namespace SkillHub.Application.DTOs.Auth;
+namespace SkillHub.Application.Dtos.Auth;
 
 public record RegisterRequestDto(string FullName, string Email, string Password);
 

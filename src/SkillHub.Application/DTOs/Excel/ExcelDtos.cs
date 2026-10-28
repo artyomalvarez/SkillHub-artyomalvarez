@@ -1,4 +1,4 @@
-namespace SkillHub.Application.DTOs.Excel;
+namespace SkillHub.Application.Dtos.Excel;
 
 public record ImportErrorDto(int RowNumber, string Error);
 

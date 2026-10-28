@@ -1,10 +1,11 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SkillHub.Application.DTOs.Enrollments;
-using SkillHub.Application.DTOs.Excel;
+using SkillHub.Application.Dtos.Enrollments;
+using SkillHub.Application.Dtos.Excel;
 using SkillHub.Application.Interfaces.External;
 using SkillHub.Application.Services;
+using ApplicationException = SkillHub.Application.Common.Exceptions.ApplicationException;
 
 namespace SkillHub.Api.Controllers;
 
@@ -84,10 +85,16 @@ public class EnrollmentsController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("{id}/certificate")]
     [HttpGet("{id:guid}/certificate")]
     [Authorize]
     public async Task<IActionResult> GetCertificate(Guid id)
     {
+        if (id == Guid.Empty)
+        {
+            throw new ApplicationException("La inscripción no existe o el ID es inválido.");
+        }
+
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrWhiteSpace(userId))
         {

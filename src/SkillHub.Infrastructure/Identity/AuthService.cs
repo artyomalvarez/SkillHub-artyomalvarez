@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Identity;
-using SkillHub.Application.DTOs.Auth;
+using SkillHub.Application.Dtos.Auth;
 using SkillHub.Application.Interfaces.External;
 using ApplicationException = SkillHub.Application.Common.Exceptions.ApplicationException;
 

@@ -1,6 +1,4 @@
-using SkillHub.Domain.Enums;
-
-namespace SkillHub.Application.DTOs.Enrollments;
+namespace SkillHub.Application.Dtos.Enrollments;
 
 public record EnrollmentDto(
     Guid Id,
@@ -8,8 +6,11 @@ public record EnrollmentDto(
     string WorkshopTitle,
     DateTime StartDateTime,
     DateTime EndDateTime,
-    EnrollmentStatus Status,
-    DateTime EnrolledAt
+    string Status,
+    DateTime EnrolledAt,
+    string InstructorName = "",
+    string ParticipantName = "",
+    string ParticipantEmail = ""
 );
 
 public record CreateEnrollmentRequestDto(Guid WorkshopId);

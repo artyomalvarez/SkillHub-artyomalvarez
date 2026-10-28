@@ -1,4 +1,4 @@
-using SkillHub.Application.DTOs.Auth;
+using SkillHub.Application.Dtos.Auth;
 
 namespace SkillHub.Application.Interfaces.External;
 

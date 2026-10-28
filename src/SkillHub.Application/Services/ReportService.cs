@@ -1,4 +1,4 @@
-using SkillHub.Application.DTOs.Reports;
+using SkillHub.Application.Dtos.Reports;
 using SkillHub.Application.Interfaces.Persistence;
 using SkillHub.Domain.Enums;
 

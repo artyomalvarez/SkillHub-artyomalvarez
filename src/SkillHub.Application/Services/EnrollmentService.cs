@@ -1,4 +1,4 @@
-using SkillHub.Application.DTOs.Enrollments;
+using SkillHub.Application.Dtos.Enrollments;
 using SkillHub.Application.Interfaces.External;
 using SkillHub.Application.Interfaces.Persistence;
 using SkillHub.Domain.Entities;
@@ -86,23 +86,35 @@ public class EnrollmentService : IEnrollmentService
         await _enrollmentRepository.AddAsync(enrollment, ct);
         await _unitOfWork.SaveChangesAsync(ct);
 
+        string instructorName = "Instructor SkillHub";
+        if (_userService is not null && !string.IsNullOrWhiteSpace(workshop.InstructorId))
+        {
+            instructorName = await _userService.GetUserFullNameAsync(workshop.InstructorId) ?? instructorName;
+        }
+
         return new EnrollmentDto(
             enrollment.Id,
             workshop.Code,
             workshop.Title,
             workshop.StartDateTime,
             workshop.EndDateTime,
-            enrollment.Status,
-            enrollment.EnrolledAt
+            enrollment.Status.ToString(),
+            enrollment.EnrolledAt,
+            instructorName
         );
     }
 
     public async Task CancelAsync(Guid enrollmentId, string currentUserId, bool isStaff, CancellationToken ct = default)
     {
+        if (enrollmentId == Guid.Empty)
+        {
+            throw new ApplicationException("La inscripción no existe o el ID es inválido.");
+        }
+
         var enrollment = await _enrollmentRepository.GetByIdAsync(enrollmentId, ct);
         if (enrollment is null)
         {
-            throw new ApplicationException($"No se encontró la inscripción con ID '{enrollmentId}'.");
+            throw new ApplicationException("La inscripción no existe o el ID es inválido.");
         }
 
         if (!isStaff && enrollment.ParticipantId != currentUserId)
@@ -111,9 +123,22 @@ public class EnrollmentService : IEnrollmentService
         }
 
         var workshop = enrollment.Workshop ?? await _workshopRepository.GetByIdAsync(enrollment.WorkshopId, ct);
-        if (workshop is not null && workshop.StartDateTime <= DateTime.UtcNow)
+        if (workshop is not null)
         {
-            throw new ApplicationException("No se puede cancelar una inscripción para un taller que ya ha comenzado.");
+            if (isStaff)
+            {
+                if (workshop.StartDateTime <= DateTime.UtcNow)
+                {
+                    throw new ApplicationException("No es posible cancelar una inscripción para un taller que ya ha comenzado.");
+                }
+            }
+            else
+            {
+                if ((workshop.StartDateTime - DateTime.UtcNow).TotalHours < 24)
+                {
+                    throw new ApplicationException("Los participantes solo pueden cancelar su inscripción hasta 24 horas antes del inicio del taller.");
+                }
+            }
         }
 
         enrollment.Cancel(currentUserId);
@@ -135,7 +160,7 @@ public class EnrollmentService : IEnrollmentService
             e.Workshop?.Title ?? string.Empty,
             e.Workshop?.StartDateTime ?? DateTime.MinValue,
             e.Workshop?.EndDateTime ?? DateTime.MinValue,
-            e.Status,
+            e.Status.ToString(),
             e.EnrolledAt
         )).ToList();
     }
@@ -143,16 +168,34 @@ public class EnrollmentService : IEnrollmentService
     public async Task<IReadOnlyList<EnrollmentDto>> GetByWorkshopIdAsync(Guid workshopId, CancellationToken ct = default)
     {
         var enrollments = await _enrollmentRepository.GetByWorkshopIdAsync(workshopId, ct);
+        var dtos = new List<EnrollmentDto>();
 
-        return enrollments.Select(e => new EnrollmentDto(
-            e.Id,
-            e.Workshop?.Code ?? string.Empty,
-            e.Workshop?.Title ?? string.Empty,
-            e.Workshop?.StartDateTime ?? DateTime.MinValue,
-            e.Workshop?.EndDateTime ?? DateTime.MinValue,
-            e.Status,
-            e.EnrolledAt
-        )).ToList();
+        foreach (var e in enrollments)
+        {
+            var participantName = "Participante";
+            var participantEmail = string.Empty;
+
+            if (_userService is not null && !string.IsNullOrWhiteSpace(e.ParticipantId))
+            {
+                participantName = await _userService.GetUserFullNameAsync(e.ParticipantId) ?? participantName;
+                participantEmail = await _userService.GetUserEmailAsync(e.ParticipantId) ?? participantEmail;
+            }
+
+            dtos.Add(new EnrollmentDto(
+                e.Id,
+                e.Workshop?.Code ?? string.Empty,
+                e.Workshop?.Title ?? string.Empty,
+                e.Workshop?.StartDateTime ?? DateTime.MinValue,
+                e.Workshop?.EndDateTime ?? DateTime.MinValue,
+                e.Status.ToString(),
+                e.EnrolledAt,
+                string.Empty,
+                participantName,
+                participantEmail
+            ));
+        }
+
+        return dtos;
     }
 
     public async Task<byte[]> GetCertificateAsync(Guid enrollmentId, string currentUserId, bool isStaff, CancellationToken ct = default)
@@ -162,10 +205,20 @@ public class EnrollmentService : IEnrollmentService
             throw new ApplicationException("El servicio de generación de certificados PDF no está configurado.");
         }
 
+        if (enrollmentId == Guid.Empty)
+        {
+            throw new ApplicationException("La inscripción no existe o el ID es inválido.");
+        }
+
         var enrollment = await _enrollmentRepository.GetByIdAsync(enrollmentId, ct);
         if (enrollment is null)
         {
-            throw new ApplicationException($"No se encontró la inscripción con ID '{enrollmentId}'.");
+            throw new ApplicationException("La inscripción no existe o el ID es inválido.");
+        }
+
+        if (enrollment.Status != EnrollmentStatus.Active)
+        {
+            throw new ApplicationException("Solo se pueden generar constancias para inscripciones en estado Activo.");
         }
 
         if (!isStaff && enrollment.ParticipantId != currentUserId)
@@ -175,9 +228,18 @@ public class EnrollmentService : IEnrollmentService
 
         var participantName = "Participante";
         var participantEmail = "participante@skillhub.com";
+        var instructorName = "Instructor SkillHub";
+
         if (_userService is not null)
         {
             participantName = await _userService.GetUserFullNameAsync(enrollment.ParticipantId) ?? participantName;
+            participantEmail = await _userService.GetUserEmailAsync(enrollment.ParticipantId) ?? participantEmail;
+
+            var workshopRef = enrollment.Workshop ?? await _workshopRepository.GetByIdAsync(enrollment.WorkshopId, ct);
+            if (workshopRef is not null && !string.IsNullOrWhiteSpace(workshopRef.InstructorId))
+            {
+                instructorName = await _userService.GetUserFullNameAsync(workshopRef.InstructorId) ?? instructorName;
+            }
         }
 
         var dto = new EnrollmentDto(
@@ -186,8 +248,9 @@ public class EnrollmentService : IEnrollmentService
             enrollment.Workshop?.Title ?? "Taller SkillHub",
             enrollment.Workshop?.StartDateTime ?? DateTime.MinValue,
             enrollment.Workshop?.EndDateTime ?? DateTime.MinValue,
-            enrollment.Status,
-            enrollment.EnrolledAt
+            enrollment.Status.ToString(),
+            enrollment.EnrolledAt,
+            instructorName
         );
 
         return _pdfService.GenerateEnrollmentCertificate(dto, participantName, participantEmail);

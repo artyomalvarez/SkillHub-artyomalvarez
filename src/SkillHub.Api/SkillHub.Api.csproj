@@ -22,4 +22,10 @@
       <ProjectReference Include="..\SkillHub.Infrastructure\SkillHub.Infrastructure.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="SkillHub_Data.xlsx">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

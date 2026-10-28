@@ -1,0 +1,82 @@
+@model SkillHub.Application.Dtos.Workshops.CreateWorkshopRequestDto
+@{
+    ViewData["Title"] = "Publicar Nuevo Taller";
+}
+
+<div class="row justify-content-center mt-4 mb-5">
+    <div class="col-lg-8">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <h1 class="fw-bold fs-2">Publicar Nuevo Taller 🚀</h1>
+                <p class="text-muted fs-5 mb-0">Ingresa los datos del taller para publicarlo en el catálogo.</p>
+            </div>
+            <a asp-action="Index" class="btn btn-outline-secondary d-flex align-items-center gap-1">
+                <span class="material-symbols-outlined" style="font-size: 18px;">arrow_back</span>
+                Volver
+            </a>
+        </div>
+
+        <div class="card card-custom p-4 p-md-5">
+            <form asp-action="Create" method="post">
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger mb-3">
+                        <div asp-validation-summary="All" class="text-danger"></div>
+                    </div>
+                }
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label asp-for="Code" class="form-label fw-semibold">Código Único</label>
+                        <input asp-for="Code" class="form-control" placeholder="Ej: FOT-001" required />
+                        <div class="form-text">Identificador alfanumérico del taller.</div>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label asp-for="Title" class="form-label fw-semibold">Título del Taller</label>
+                        <input asp-for="Title" class="form-control" placeholder="Ej: Taller de Iluminación y Retrato" required />
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="Description" class="form-label fw-semibold">Descripción Detallada</label>
+                        <textarea asp-for="Description" class="form-control" rows="3" placeholder="Describe los objetivos y contenido del taller..." required></textarea>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="InstructorEmail" class="form-label fw-semibold">Correo del Instructor Responsable</label>
+                        <input asp-for="InstructorEmail" type="email" class="form-control" placeholder="instructor@correo.com" required />
+                        <div class="form-text">Debe ser un instructor registrado con cuenta activa.</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Capacity" class="form-label fw-semibold">Cupo Máximo</label>
+                        <input asp-for="Capacity" type="number" min="1" max="500" class="form-control" required />
+                        <div class="form-text">Cantidad máxima de participantes permitidos.</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="StartDateTime" class="form-label fw-semibold">Fecha y Hora de Inicio (UTC)</label>
+                        <input asp-for="StartDateTime" type="datetime-local" class="form-control" 
+                               value="@Model.StartDateTime.ToString("yyyy-MM-ddTHH:mm")" required />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="EndDateTime" class="form-label fw-semibold">Fecha y Hora de Fin (UTC)</label>
+                        <input asp-for="EndDateTime" type="datetime-local" class="form-control" 
+                               value="@Model.EndDateTime.ToString("yyyy-MM-ddTHH:mm")" required />
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-light border px-4 py-2">Cancelar</a>
+                    <button type="submit" class="btn bg-primary-custom fw-semibold px-4 py-2 shadow-sm d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined" style="font-size: 20px;">publish</span>
+                        Publicar Taller
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
