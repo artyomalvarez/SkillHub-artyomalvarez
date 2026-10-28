@@ -35,6 +35,7 @@ public class ExcelService : IExcelService
 
         try
         {
+            // ClosedXML reads the workbook into memory. The worksheet evaluation starts at row 2 to bypass headers.
             using var workbook = new XLWorkbook(fileStream);
             var worksheet = workbook.Worksheets.FirstOrDefault();
 

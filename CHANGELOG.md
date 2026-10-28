@@ -2,6 +2,27 @@
 
 Todas las modificaciones notables de este proyecto están documentadas en este archivo siguiendo la política de documentación técnica continua (`America/Bogota`).
 
+## [1.13.0] - 2026-10-27 19:13:00 -05:00
+
+### Docs
+- **Actualización Formal del `README.md`**:
+  - Incorporada la estructura final del proyecto con desglose de tecnologías (.NET, EF Core, PostgreSQL, Identity, Scalar, QuestPDF, ClosedXML).
+  - Guía completa de ejecución paso a paso (migraciones EF Core, arranque de API y Web MVC).
+  - Resumen exhaustivo de endpoints de la API REST, matriz de credenciales predeterminadas y reglas de negocio implementadas.
+  - Sección de limitaciones conocidas e información de autoría (Juan José Álvarez - Clan Esthercita).
+
+## [1.12.0] - 2026-10-27 19:10:00 -05:00
+
+### Refactored
+- **Limpieza de Emojis y Profesionalización General**:
+  - Eliminados todos los emojis de la consola en `DataSeeder.cs`, `Program.cs` y vistas Razor de `SkillHub.Web`.
+  - Redacción profesional y corporativa en inglés del archivo [`README.md`](README.md), sin emojis, con arquitectura formal, instrucciones detalladas de ejecución y matriz de credenciales.
+- **Arquitectura Anti-Espagueti y Controladores Delgados (Thin Controllers)**:
+  - Verificados controladores de API y MVC: delegación directa a servicios de aplicación e infraestructura sin lógica de negocio incrustada.
+  - Implementación de retornos tempranos (*early returns*) y nombres semánticos estilo prosa en inglés.
+- **Comentarios Técnicos de Alto Valor**:
+  - Removidos comentarios triviales y agregadas explicaciones concretas en puntos clave (forzado UTC para PostgreSQL, detección de cruces de horarios en inscripciones, lectura en memoria con ClosedXML y contingencia de tipografías headless en QuestPDF).
+
 ## [1.11.0] - 2026-10-27 18:59:00 -05:00
 
 ### Fixed

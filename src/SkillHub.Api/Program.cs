@@ -94,7 +94,7 @@ using (var scope = app.Services.CreateScope())
             : ex;
 
         Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine($"\n🚨 [SEEDER ERROR] {inner.Message}");
+        Console.WriteLine($"\n[SEEDER ERROR] {inner.Message}");
         Console.WriteLine(inner.StackTrace);
         Console.ResetColor();
 

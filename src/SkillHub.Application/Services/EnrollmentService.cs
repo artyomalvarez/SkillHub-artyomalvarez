@@ -52,21 +52,20 @@ public class EnrollmentService : IEnrollmentService
             throw new ApplicationException("No es posible inscribirse en un taller que ya ha iniciado.");
         }
 
-        // 1. Validar cupos usando la regla de negocio de la entidad Workshop
+        // Capacity check: evaluates active enrollments against total workshop quota. Cancelled enrollments free slots immediately.
         var activeCount = await _enrollmentRepository.GetActiveEnrollmentsCountByWorkshopIdAsync(workshop.Id, ct);
         if (!workshop.HasAvailableCapacity(activeCount))
         {
             throw new ApplicationException("El taller no tiene cupos disponibles.");
         }
 
-        // 2. Evitar inscripciones duplicadas activas
         var isAlreadyEnrolled = await _enrollmentRepository.HasActiveEnrollmentAsync(workshop.Id, participantId, ct);
         if (isAlreadyEnrolled)
         {
             throw new ApplicationException("Ya cuentas con una inscripción activa en este taller.");
         }
 
-        // 3. Evitar cruces de horario con otros talleres activos
+        // Schedule collision detection: prevents concurrent active commitments across distinct workshops.
         var hasOverlap = await _enrollmentRepository.HasOverlappingActiveEnrollmentAsync(participantId, workshop.StartDateTime, workshop.EndDateTime, ct);
         if (hasOverlap)
         {

@@ -11,6 +11,7 @@ public class PdfService : IPdfService
     static PdfService()
     {
         QuestPDF.Settings.License = LicenseType.Community;
+        // Prevents hard crashes on headless Linux environments where standard Microsoft fonts may not be present in fontconfig.
         QuestPDF.Settings.ThrowOnMissingFontFamilies = false;
         QuestPDF.Settings.UseSystemFonts = true;
     }

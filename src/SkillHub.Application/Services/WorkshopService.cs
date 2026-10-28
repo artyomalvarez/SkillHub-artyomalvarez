@@ -33,31 +33,27 @@ public class WorkshopService : IWorkshopService
 
     public async Task<WorkshopDto> CreateWorkshopAsync(CreateWorkshopRequestDto dto, CancellationToken ct = default)
     {
-        // 1. Validar que el instructor exista por email usando IUserService
         var instructorId = await _userService.GetUserIdByEmailAsync(dto.InstructorEmail);
         if (string.IsNullOrWhiteSpace(instructorId))
         {
             throw new ApplicationException($"No se encontró ningún instructor registrado con el correo '{dto.InstructorEmail}'.");
         }
 
-        // 2. Validar que el código no esté repetido de antemano
         var existingWorkshop = await _workshopRepository.GetByCodeAsync(dto.Code, ct);
         if (existingWorkshop is not null)
         {
             throw new ApplicationException("El código del taller ya existe en la plataforma.");
         }
 
-        // 3. Forzar UTC en las fechas
+        // PostgreSQL requires explicit UTC timestamps with time zone. SpecifyKind ensures the timestamp has Utc kind without conversion drift.
         var startDateTimeUtc = DateTime.SpecifyKind(dto.StartDateTime, DateTimeKind.Utc);
         var endDateTimeUtc = DateTime.SpecifyKind(dto.EndDateTime, DateTimeKind.Utc);
 
-        // 4. Validar que la fecha de inicio sea en el futuro
         if (startDateTimeUtc <= DateTime.UtcNow)
         {
             throw new ApplicationException("La fecha de inicio debe ser en el futuro.");
         }
 
-        // 5. Validaciones de negocio adicionales sobre fechas y capacidad
         if (startDateTimeUtc >= endDateTimeUtc)
         {
             throw new ApplicationException("La fecha de inicio debe ser anterior a la fecha de finalización.");
@@ -88,6 +84,7 @@ public class WorkshopService : IWorkshopService
         }
         catch (DbUpdateException)
         {
+            // Catches any race-condition or concurrent constraint violation on the UNIQUE index for workshop code.
             throw new ApplicationException("El código del taller ya existe en la plataforma.");
         }
 

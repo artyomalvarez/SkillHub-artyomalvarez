@@ -1,106 +1,145 @@
-# SkillHub - Plataforma de Gestión de Talleres Formativos
+# SkillHub - Workshop Management System
 
-Solución integral basada en **Clean Architecture** con **.NET 10**, **PostgreSQL**, **ASP.NET Core Identity**, **JWT**, **Scalar OpenAPI**, **ClosedXML**, **QuestPDF** y frontend **ASP.NET Core MVC con Bootstrap 5**.
-
----
-
-## 🏛️ Arquitectura de la Solución
-
-```
-SkillHub/
-├── src/
-│   ├── SkillHub.Domain           # Entidades, Enums y Excepciones puras (Sin dependencias externas)
-│   ├── SkillHub.Application      # Casos de uso, DTOs, Interfaces y Servicios de Negocio
-│   ├── SkillHub.Infrastructure   # EF Core (PostgreSQL), Identity, JWT, QuestPDF, ClosedXML
-│   ├── SkillHub.Api              # Web API REST con Scalar y Controladores desacoplados
-│   └── SkillHub.Web              # Aplicación Web MVC (Consumidor HTTP de la API con Sesión JWT)
-└── SkillHub.slnx
-```
+SkillHub is a full-stack web application (REST API + ASP.NET Core MVC) built to manage workshops and enrollments for a training center. It replaces manual tracking in spreadsheets with centralized capacity control, overlap validation, automated PDF certificate generation, and role-based access for participants and staff (instructors).
 
 ---
 
-## 🚀 Instrucciones de Ejecución
+## Technologies
 
-### 1. Iniciar la API REST (`SkillHub.Api`)
+- **.NET 10** (ASP.NET Core Web API and MVC)
+- **Entity Framework Core 10 + Npgsql** (PostgreSQL provider)
+- **ASP.NET Core Identity + JWT Bearer Authentication**
+- **PostgreSQL 16+** (Local instance)
+- **Scalar** (OpenAPI Documentation)
+- **QuestPDF** (PDF certificate generation)
+- **ClosedXML** (Excel import processing)
+
+---
+
+## Architecture
+
+The solution follows Clean Architecture divided into five projects:
+
+- **`src/SkillHub.Domain`**: Entities (`Workshop`, `Enrollment`), enums, and pure domain rules.
+- **`src/SkillHub.Application`**: DTOs, repository/service interfaces, and application services (`EnrollmentService`, `WorkshopService`).
+- **`src/SkillHub.Infrastructure`**: `ApplicationDbContext`, EF Core configurations, Identity setup (`ApplicationUser`, `AuthService`, `JwtGenerator`), repositories, PDF/Excel services, and the startup seeder.
+- **`src/SkillHub.Api`**: REST controllers, `ExceptionHandlingMiddleware`, Dependency Injection setup, and Scalar configuration.
+- **`src/SkillHub.Web`**: ASP.NET Core MVC frontend for participants and instructors, consuming the API via HttpClient (`ApiClient`).
+
+---
+
+## Prerequisites
+
+- [.NET 10 SDK](https://dotnet.microsoft.com/) (or .NET 8+)
+- [PostgreSQL 16+](https://www.postgresql.org/) (running on localhost port 5432)
+- `dotnet-ef` CLI tool (`dotnet tool install --global dotnet-ef`)
+
+---
+
+## How to Run
+
+### 1. Clone the repository
 ```bash
+git clone <YOUR_GITHUB_REPOSITORY_URL>
+cd SkillHub
+```
+
+### 2. Configure the database
+Make sure your local PostgreSQL service is running. Edit `ConnectionStrings:DefaultConnection` in `src/SkillHub.Api/appsettings.json` with your local Postgres credentials (username and password).
+
+### 3. Apply migrations and run the API
+```bash
+dotnet ef database update --project src/SkillHub.Infrastructure --startup-project src/SkillHub.Api
 dotnet run --project src/SkillHub.Api
 ```
-- **URL Base:** `http://localhost:5250`
-- **Documentación Scalar:** `http://localhost:5250/scalar/v1`
 
-### 2. Iniciar la Aplicación Web MVC (`SkillHub.Web`)
-En otra terminal:
+> **Note:** The API automatically executes the `DataSeeder` on startup, which reads the provided `SkillHub_Data.xlsx` file to populate the database with initial instructors, participants, and workshops.
+
+### 4. Run the MVC Web Client
+Open a new terminal instance and run:
 ```bash
 dotnet run --project src/SkillHub.Web
 ```
-- **Acceso:** `http://localhost:5237` (o el puerto configurado por Kestrel en consola).
-- **Ruta de inicio por defecto:** `/Account/Login`
+
+### 5. Access the applications
+- **Frontend Web App:** `http://localhost:5237` (Check your terminal for the exact port assigned by Kestrel).
+- **API Documentation (Scalar):** `http://localhost:5250/scalar/v1` (Check your terminal for the exact port).
 
 ---
 
-## 🔑 Credenciales de Acceso (Sembradas en Primer Arranque)
+## Default Credentials
 
-Los instructores y empleados de SkillHub cuentan con cuentas preconfiguradas con el rol **Staff**. Puedes ingresar inmediatamente con cualquiera de las siguientes credenciales:
+### Staff Accounts (Instructors)
+Pre-seeded from the Excel file:
+- **Email:** `andres.mejia@correo.com`
+- **Password:** `Instructor2026*`
+- **Role:** `Staff`
 
-### 👨‍🏫 Instructores / Empleados (Rol: `Staff`):
-| Nombre Completo | Correo Electrónico | Contraseña | Especialidad |
-| :--- | :--- | :--- | :--- |
-| **Andrés Mejía** | `andres.mejia@correo.com` | `Instructor2026*` | Fotografía Digital |
-| **Rosa Barrios** | `rosa.barrios@correo.com` | `Instructor2026*` | Diseño Gráfico e Ilustración |
-| **Mauricio Jiménez** | `mauricio.jimenez@correo.com` | `Instructor2026*` | Programación Web y Cloud |
-| **Natalia Herrera** | `natalia.herrera@correo.com` | `Instructor2026*` | Marketing Digital y SEO |
-| **Hernán Quintero** | `hernan.quintero@correo.com` | `Instructor2026*` | Producción Audiovisual |
-| **Paola Vargas** | `paola.vargas@correo.com` | `Instructor2026*` | Finanzas y Emprendimiento |
+Additional pre-configured instructors: `rosa.barrios@correo.com`, `mauricio.jimenez@correo.com`, `staff@skillhub.com` (`Staff2026*`).
 
-> **Nota:** También se cuenta con una cuenta administrativa de soporte: `staff@skillhub.com` / `Staff2026*`.
+### Participant Accounts
+Pre-seeded in the database:
+- **Email:** `carlos.rincon@correo.com` (or `jorge.perez@correo.com`)
+- **Password:** `Skillhub2026*`
+- **Role:** `Participant`
 
-### 🎓 Participantes de Ejemplo (Rol: `Participant`):
-| Nombre Completo | Correo Electrónico | Contraseña |
-| :--- | :--- | :--- |
-| **Carlos Rincón** | `carlos.rincon@correo.com` | `Skillhub2026*` |
-| **Valentina Gómez** | `valentina.gomez@correo.com` | `Skillhub2026*` |
-| **Juan Restrepo** | `juan.restrepo@correo.com` | `Skillhub2026*` |
-| **María Torres** | `maria.torres@correo.com` | `Skillhub2026*` |
-
-Cualquier nuevo usuario que se registre a través del formulario público (`/Account/Register`) será asignado automáticamente con el rol de **`Participant`**.
+*Note: You can also register a new participant directly from the web interface (`/Account/Register`).*
 
 ---
 
-## 📋 Reglas de Negocio Implementadas
+## Implemented Business Rules
 
-1. **Usuarios y Acceso:**
-   - Registro público exclusivo con rol `Participant`.
-   - Consulta pública del catálogo de talleres disponibles sin necesidad de autenticación.
-   - Restricción estricta: los participantes solo pueden ver y gestionar sus propias inscripciones.
-   - Los instructores/empleados (`Staff`) pueden publicar talleres, ver los inscritos de cualquier taller y consultar reportes.
+1. **Authentication:** Public registration creates participants. Only staff can create workshops and view enrolled participants.
+2. **Workshops:** Unique alphanumeric code. Start date must be in the future, and end date must be after the start date.
+3. **Catalog:** Publicly accessible. Shows only future workshops and calculates available slots in real-time.
+4. **Enrollments:**
+   - Capacity limit cannot be exceeded.
+   - No duplicate active enrollments for the same participant and workshop.
+   - No time overlap with other active enrollments.
+   - Cannot enroll in workshops that have already started.
+5. **Cancellation:**
+   - Participants can cancel up to 24 hours before the start time.
+   - Staff can cancel at any time before the workshop starts.
+   - Cancellations log the actor and timestamp, and free up the slot immediately.
+6. **Excel Import:** Staff can upload an Excel file to mass-enroll participants. Valid rows are saved; invalid rows are rejected with detailed error messages.
+7. **PDF Certificate:** Participants can download a PDF certificate for active enrollments only.
+8. **Reports:** Staff can view the top workshops ordered by the highest number of active enrollments.
 
-2. **Talleres:**
-   - Código único alfanumérico (ej. `FOT-001`, `DIS-001`).
-   - Todo taller tiene asignado un instructor registrado en la plataforma.
-   - Las fechas de inicio deben ser futuras y la fecha de finalización debe ser posterior a la de inicio.
-   - El catálogo muestra únicamente talleres futuros con el cálculo en tiempo real de cupos disponibles (`Capacidad - Inscripciones Activas`).
+---
 
-3. **Inscripciones y Validaciones:**
-   - **Regla 1 (Capacidad):** Solo se permite la inscripción si el taller cuenta con cupos disponibles (las inscripciones canceladas liberan cupo de inmediato).
-   - **Regla 2 (No Duplicados):** Un participante no puede inscribirse más de una vez de forma activa en el mismo taller.
-   - **Regla 3 (No Solapamiento):** No se permite la inscripción si el taller coincide o se cruza en horario con otra inscripción activa del mismo participante.
-   - **Regla 4 (Talleres Futuros):** No es posible inscribirse en talleres ya iniciados o del pasado.
-   - **Regla 5 (Cancelación y Regla de 24 Horas):**
-     - Un participante puede cancelar su inscripción **hasta 24 horas antes** del inicio del taller. Pasado ese límite, el sistema bloquea la acción.
-     - Un empleado (`Staff`) puede cancelar la inscripción de cualquier participante en cualquier momento previo al inicio del taller, registrándose en base de datos quién canceló (`CancelledBy`) y en qué instante (`CancelledAt`).
-   - **Regla 6 (Reinscripción):** Un usuario cuya inscripción fue cancelada puede volver a inscribirse si aún hay cupos disponibles y cumple con las reglas horarias.
+## API Endpoints Summary
 
-4. **Inscripción Masiva vía Excel (`POST /api/v1/enrollments/import`):**
-   - Procesamiento de archivos `.xlsx` con columnas `ParticipantEmail` y `WorkshopCode`.
-   - Validación individual fila por fila con todas las reglas de negocio.
-   - Tolerancia a fallos: las filas válidas se persisten exitosamente aunque otras fallen.
-   - Respuesta detallada indicando total de éxitos y listado de errores con número de fila y causa exacta.
+### Auth
+- `POST /api/v1/auth/register` (Public)
+- `POST /api/v1/auth/login` (Public)
 
-5. **Constancia de Inscripción en PDF (`GET /api/v1/enrollments/{id}/certificate`):**
-   - Generación bajo demanda usando QuestPDF Community.
-   - Válido únicamente para inscripciones en estado `Active`.
-   - Incluye: Nombre de SkillHub, título "Constancia de inscripción", nombre y correo del participante, código y título del taller, instructor asignado, fecha y horario del taller (UTC), fecha de inscripción y fecha de generación del documento.
+### Workshops
+- `GET /api/v1/workshops` (Public)
+- `GET /api/v1/workshops/{id}` (Public)
+- `POST /api/v1/workshops` (Staff)
+- `GET /api/v1/workshops/{id}/enrollments` (Staff)
 
-6. **Reportes Administrativos (`GET /api/v1/reports/top-workshops`):**
-   - Consulta restringida a `Staff`.
-   - Orden descendente por mayor número de inscripciones activas.
+### Enrollments
+- `POST /api/v1/enrollments` (Participant)
+- `GET /api/v1/enrollments/mine` (Participant)
+- `PATCH /api/v1/enrollments/{id}/cancel` (Owner or Staff)
+- `POST /api/v1/enrollments/import` (Staff)
+- `GET /api/v1/enrollments/{id}/certificate` (Owner or Staff)
+
+### Reports
+- `GET /api/v1/reports/top-workshops` (Staff)
+
+---
+
+## Known Limitations
+
+- No automated unit or integration tests (verification was done manually through the UI and Scalar).
+- No pagination on list endpoints.
+
+---
+
+## Author
+
+- **Name:** Juan José Álvarez
+- **Clan:** Esthercita
+- **Email:** alvarezmanjarrezjuanjose

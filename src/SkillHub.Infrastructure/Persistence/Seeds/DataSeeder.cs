@@ -256,7 +256,7 @@ public static class DataSeeder
         catch (Exception ex)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"\n🚨 [SEEDER FATAL] Error no controlado: {ex.Message}");
+            Console.WriteLine($"\n[SEEDER FATAL] Error no controlado: {ex.Message}");
             Console.WriteLine($"Detalles: {ex}\n");
             Console.ResetColor();
             throw; // Re-lanzar para que Program.cs también lo capture
